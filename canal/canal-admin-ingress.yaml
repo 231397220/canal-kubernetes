@@ -1,0 +1,21 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/affinity: cookie
+    nginx.ingress.kubernetes.io/affinity-mode: persistent
+    nginx.ingress.kubernetes.io/session-cookie-hash: sha1
+    nginx.ingress.kubernetes.io/session-cookie-name: sit-canal-cookie
+  labels:
+    cattle.io/creator: norman
+  name: canal-admin
+  namespace: canal
+spec:
+  rules:
+  - host: canal-admin.dev.eyolo.net
+    http:
+      paths:
+      - backend:
+          serviceName: canal-admin
+          servicePort: 8089
+        pathType: ImplementationSpecific

@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    cattle.io/creator: norman
+  name: canal
+  namespace: canal
+spec:
+  ports:
+  - name: admin
+    port: 11110
+    protocol: TCP
+    targetPort: 11110
+  - name: canal
+    port: 11111
+    protocol: TCP
+    targetPort: 11111
+  - name: metrics
+    port: 11112
+    protocol: TCP
+    targetPort: 11112
+  selector:
+    app: canal
+  sessionAffinity: None
+  type: ClusterIP

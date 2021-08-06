@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    cattle.io/creator: norman
+    workload.user.cattle.io/workloadselector: statefulSet-canal-canal
+  name: canal
+  namespace: canal
+spec:
+  podManagementPolicy: OrderedReady
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      workload.user.cattle.io/workloadselector: statefulSet-canal-canal
+  serviceName: canal
+  template:
+    metadata:
+      labels:
+        app: canal
+        workload.user.cattle.io/workloadselector: statefulSet-canal-canal
+    spec:
+      affinity: {}
+      containers:
+      - env:
+        - name: canal.admin.manager
+          value: canal-admin:8089
+        - name: canal.admin.passwd
+          value: 4ACFE3202A5FF5CF467898FC58AAB1D615029441
+        - name: canal.admin.port
+          value: "11110"
+        - name: canal.admin.register.cluster
+          value: sit-canal-cluster
+        - name: canal.admin.user
+          value: admin
+        image: harbor.eyolo.net/docker.io/canal/canal-server:v1.1.4
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /metrics
+            port: 11112
+            scheme: HTTP
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 2
+        name: canal
+        ports:
+        - containerPort: 11110
+          name: admin
+          protocol: TCP
+        - containerPort: 11111
+          name: canal
+          protocol: TCP
+        - containerPort: 11112
+          name: metrics
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /metrics
+            port: 11112
+            scheme: HTTP
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          successThreshold: 2
+          timeoutSeconds: 2
+        resources:
+          limits:
+            cpu: 1600m
+            memory: 4Gi
+          requests:
+            cpu: "1"
+            memory: 4Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities: {}
+          privileged: false
+          readOnlyRootFilesystem: false
+          runAsNonRoot: false
+        stdin: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        tty: true
+      dnsConfig: {}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+  updateStrategy:
+    type: OnDelete
